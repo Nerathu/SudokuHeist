@@ -37,13 +37,27 @@ function bindIntelToggle() {
   const btn = document.getElementById("intelToggle");
   if (!btn) return;
   intelToggleBound = true;
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     intelMode = !intelMode;
     intelScanDigit = null;
     btn.setAttribute("aria-pressed", String(intelMode));
     syncIntelChrome();
     if (intelMode) {
-      showToast("WIRETAP aktiv — Zelle + Zahl oder Scan");
+      const state = window.__lastState;
+      if (state?.ante?.intel_enabled) {
+        const { api } = await import("./api.js");
+        try {
+          const result = await api.syncIntel();
+          if (onStateUpdate) onStateUpdate(result);
+        } catch (err) {
+          intelMode = false;
+          btn.setAttribute("aria-pressed", "false");
+          syncIntelChrome();
+          showToast(err.message);
+          return;
+        }
+      }
+      showToast("WIRETAP aktiv — nur mögliche Kandidaten");
       vibrate(12);
     }
   });

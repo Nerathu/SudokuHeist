@@ -894,7 +894,7 @@ body.puzzle-mode {
 .intel-n4.active { color: #4cc9f0; text-shadow: 0 0 6px rgba(76, 201, 240, 0.9); }
 .intel-n5.active { color: #b5179e; text-shadow: 0 0 6px rgba(181, 23, 158, 0.9); }
 .intel-n6.active { color: #f72585; text-shadow: 0 0 6px rgba(247, 37, 133, 0.9); }
-.intel-n7.active { color: #7209b7; text-shadow: 0 0 6px rgba(114, 9, 183, 0.9); }
+.intel-n7.active { color: #d4a5ff; text-shadow: 0 0 8px rgba(212, 165, 255, 0.95); }
 .intel-n8.active { color: #00f5d4; text-shadow: 0 0 6px rgba(0, 245, 212, 0.9); }
 .intel-n9.active { color: #fee440; text-shadow: 0 0 6px rgba(254, 228, 64, 0.9); }
 

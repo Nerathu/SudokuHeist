@@ -10,6 +10,7 @@ from copy import deepcopy
 from app.db import clear_run, get_meta, load_run, save_run, upgrade_level
 from app.game.autofill import run_auto_fills
 from app.game.balance import HELP_BONUS_SCORE, INTEL_DIFFICULTIES
+from app.game.intel import refresh_intel, strip_digit_from_peers, valid_candidates
 from app.game.boosts import BOOSTS, boost_by_id, can_afford_boost, fifty_fifty_options, spend_score
 from app.game.shop import generate_shop_offers_with_meta, reroll_cost
 from app.game.tricks import meta_upgrades, random_quote, trick_by_id
@@ -340,6 +341,8 @@ def place_cell(row: int, col: int, value: int) -> dict:
     ante["moves_left"] -= 1
     ante.setdefault("hints", {}).pop(f"{row},{col}", None)
     _clear_cell_intel(ante, row, col)
+    if _intel_enabled(ante):
+        strip_digit_from_peers(ante, row, col, value)
 
     if not ante.get("target_met") and ante["score"] >= ante["score_target"]:
         _grant_target_met(ante, events)
@@ -448,6 +451,10 @@ def clear_cell(row: int, col: int) -> dict:
 
     ante["player_grid"][row][col] = 0
     _clear_cell_intel(ante, row, col)
+    if _intel_enabled(ante):
+        valid = valid_candidates(ante, row, col)
+        if valid:
+            ante.setdefault("intel", {})[f"{row},{col}"] = sorted(valid)
     events = [{"type": "cell_cleared", "row": row, "col": col, "message": "Falsche Zahl entfernt."}]
     _persist(state)
     out = public_state(state)
@@ -475,9 +482,12 @@ def toggle_intel_note(row: int, col: int, digit: int) -> dict:
     notes = ante.setdefault("intel", {})
     key = f"{row},{col}"
     current = set(notes.get(key, []))
+    valid = valid_candidates(ante, row, col)
     if digit in current:
         current.remove(digit)
     else:
+        if digit not in valid:
+            raise ValueError("Zahl hier blockiert")
         current.add(digit)
     if current:
         notes[key] = sorted(current)
@@ -487,6 +497,22 @@ def toggle_intel_note(row: int, col: int, digit: int) -> dict:
     _persist(state)
     out = public_state(state)
     out["events"] = [{"type": "intel_toggle", "row": row, "col": col, "digit": digit}]
+    return out
+
+
+def sync_intel() -> dict:
+    state = _hydrate(load_run())
+    if state["phase"] != PHASE_ANTE or not state.get("ante"):
+        raise ValueError("Kein aktives Ante")
+
+    ante = state["ante"]
+    if not _intel_enabled(ante):
+        raise ValueError("INTEL erst ab mittlerer Schwierigkeit")
+
+    refresh_intel(ante, fill_all=True)
+    _persist(state)
+    out = public_state(state)
+    out["events"] = [{"type": "intel_sync", "message": "Wiretap synchronisiert."}]
     return out
 
 

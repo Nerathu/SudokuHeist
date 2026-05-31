@@ -95,6 +95,14 @@ def api_cell_intel(body: CellIntelRequest) -> dict:
         raise HTTPException(400, str(exc)) from exc
 
 
+@router.post("/api/intel/sync")
+def api_intel_sync() -> dict:
+    try:
+        return run_service.sync_intel()
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
 @router.post("/api/ante/advance")
 def api_ante_advance() -> dict:
     try:

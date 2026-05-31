@@ -51,6 +51,7 @@ export const api = {
   placeCell: (row, col, value) => API.post("/api/cell/place", { row, col, value }),
   clearCell: (row, col) => API.post("/api/cell/clear", { row, col }),
   toggleIntelNote: (row, col, digit) => API.post("/api/cell/intel", { row, col, digit }),
+  syncIntel: () => API.post("/api/intel/sync"),
   advanceVictory: () => API.post("/api/ante/advance"),
   shopBuy: (item_id, kind) => API.post("/api/shop/buy", { item_id, kind }),
   shopReroll: () => API.post("/api/shop/reroll"),

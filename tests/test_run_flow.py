@@ -88,7 +88,7 @@ def test_victory_phase_before_shop(temp_db):
 
 def test_intel_notes_medium_plus(temp_db):
     from app.db import load_run, save_run
-    from app.game.balance import HELP_BONUS_SCORE
+    from app.game.intel import valid_candidates
 
     run_service.new_run(seed=4242)
     raw = load_run()
@@ -100,16 +100,20 @@ def test_intel_notes_medium_plus(temp_db):
 
     grid = state["ante"]["player_grid"]
     r, c = next((r, c) for r in range(9) for c in range(9) if grid[r][c] == 0)
+    raw = load_run()
+    valid = sorted(valid_candidates(raw["ante"], r, c))
+    assert len(valid) >= 2
+    a, b = valid[0], valid[1]
 
-    toggled = run_service.toggle_intel_note(r, c, 5)
-    assert toggled["ante"]["intel"][f"{r},{c}"] == [5]
+    toggled = run_service.toggle_intel_note(r, c, a)
+    assert toggled["ante"]["intel"][f"{r},{c}"] == [a]
 
-    toggled = run_service.toggle_intel_note(r, c, 5)
+    toggled = run_service.toggle_intel_note(r, c, a)
     assert f"{r},{c}" not in toggled["ante"]["intel"]
 
-    toggled = run_service.toggle_intel_note(r, c, 3)
-    toggled = run_service.toggle_intel_note(r, c, 7)
-    assert toggled["ante"]["intel"][f"{r},{c}"] == [3, 7]
+    toggled = run_service.toggle_intel_note(r, c, a)
+    toggled = run_service.toggle_intel_note(r, c, b)
+    assert toggled["ante"]["intel"][f"{r},{c}"] == [a, b]
 
 
 def test_intel_disabled_on_easy(temp_db):
