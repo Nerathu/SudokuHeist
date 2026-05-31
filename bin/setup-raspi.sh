@@ -4,6 +4,9 @@
 # Optional: INSTALL_DIR=~/apps/sudokuheist REPO_URL=git@github.com:Nerathu/SudokuHeist.git
 set -euo pipefail
 
+# shellcheck source=lib-common.sh
+source "$(dirname "$0")/lib-common.sh"
+
 REPO_URL="${REPO_URL:-git@github.com:Nerathu/SudokuHeist.git}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/sudokuheist}"
 BRANCH="${BRANCH:-main}"
@@ -54,6 +57,11 @@ else
   run_as_user "git clone --branch '$BRANCH' '$REPO_URL' '$INSTALL_DIR'"
 fi
 
+if [[ ! -f "$INSTALL_DIR/.env" ]]; then
+  echo "==> .env anlegen (HOST_PORT=8787)"
+  cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+fi
+
 # --- Build & Start ---
 echo "==> Container bauen und starten"
 run_as_user "cd '$INSTALL_DIR' && docker compose up -d --build --remove-orphans"
@@ -69,11 +77,12 @@ if command -v systemctl &>/dev/null; then
 fi
 
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+PORT="$(read_host_port "$INSTALL_DIR")"
 echo ""
 echo "============================================"
 echo " SudokuHeist ist bereit."
-echo " URL:    http://${IP:-<raspi-ip>}/sudokuheist/"
-echo " Health: http://${IP:-<raspi-ip>}/sudokuheist/health"
+echo " URL:    $(game_url "${IP:-<raspi-ip>}" "$PORT")"
+echo " Health: $(health_url "${IP:-<raspi-ip>}" "$PORT")"
 echo ""
 echo " Updates vom Entwicklungs-PC:"
 echo "   1. git push"

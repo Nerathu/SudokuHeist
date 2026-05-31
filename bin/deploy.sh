@@ -3,6 +3,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib-common.sh
+source "$(dirname "$0")/lib-common.sh"
 cd "$ROOT"
 
 BRANCH="${BRANCH:-main}"
@@ -19,7 +21,10 @@ fi
 
 docker compose up -d --build --remove-orphans
 
+IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+PORT="$(read_host_port "$ROOT")"
+
 echo ""
 echo "Deploy fertig."
-echo "  Spiel:  http://$(hostname -I | awk '{print $1}')/sudokuheist/"
-echo "  Health: http://$(hostname -I | awk '{print $1}')/sudokuheist/health"
+echo "  Spiel:  $(game_url "${IP:-localhost}" "$PORT")"
+echo "  Health: $(health_url "${IP:-localhost}" "$PORT")"
