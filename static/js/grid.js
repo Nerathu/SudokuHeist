@@ -32,6 +32,29 @@ function isWrongCell(r, c, state) {
   return (state.ante.wrong_cells || []).some(([wr, wc]) => wr === r && wc === c);
 }
 
+function validCandidatesForCell(grid, row, col) {
+  if (grid[row][col] !== 0) return [];
+  const seen = new Set();
+  for (let i = 0; i < 9; i++) {
+    if (grid[row][i]) seen.add(grid[row][i]);
+    if (grid[i][col]) seen.add(grid[i][col]);
+  }
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      if (grid[r][c]) seen.add(grid[r][c]);
+    }
+  }
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((n) => !seen.has(n));
+}
+
+function filterIntelNotes(grid, row, col, notes) {
+  if (!notes?.length) return [];
+  const allowed = new Set(validCandidatesForCell(grid, row, col));
+  return notes.filter((n) => allowed.has(n));
+}
+
 function bindIntelToggle() {
   if (intelToggleBound) return;
   const btn = document.getElementById("intelToggle");
@@ -106,11 +129,12 @@ function applyIntelScan(digit, state) {
   intelScanDigit = digit;
   syncIntelChrome();
   const intel = state?.ante?.intel || {};
+  const grid = state?.ante?.player_grid;
   document.querySelectorAll(".cell").forEach((cell) => {
     cell.classList.remove("intel-match");
     const r = Number(cell.dataset.row);
     const c = Number(cell.dataset.col);
-    const notes = intel[`${r},${c}`] || [];
+    const notes = filterIntelNotes(grid, r, c, intel[`${r},${c}`] || []);
     if (notes.includes(digit)) {
       cell.classList.add("intel-match");
       cell.querySelectorAll(".intel-grid span").forEach((span) => {
@@ -252,8 +276,9 @@ export function renderGrid(state) {
 
       if (!val && hints[hintKey]) {
         renderHintCell(cell, hints[hintKey]);
-      } else if (!val && intelNotes.length) {
-        renderIntelCell(cell, intelNotes);
+      } else if (!val && intelMode && state.ante.intel_enabled) {
+        const filteredNotes = filterIntelNotes(grid, r, c, intelNotes);
+        if (filteredNotes.length) renderIntelCell(cell, filteredNotes);
       } else {
         cell.textContent = val || "";
       }

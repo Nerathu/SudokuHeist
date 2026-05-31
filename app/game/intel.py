@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 
 def peer_cells(row: int, col: int) -> list[tuple[int, int]]:
     peers: list[tuple[int, int]] = []
@@ -69,8 +71,38 @@ def refresh_intel(ante: dict, *, fill_all: bool = False) -> None:
                 intel.pop(key, None)
                 continue
             valid = valid_candidates(ante, r, c)
-            if fill_all or key in intel:
+            if fill_all:
                 if valid:
                     intel[key] = sorted(valid)
                 else:
                     intel.pop(key, None)
+            elif key in intel:
+                pruned = sorted(set(intel[key]) & valid)
+                if pruned:
+                    intel[key] = pruned
+                else:
+                    intel.pop(key, None)
+
+
+def maintain_intel(ante: dict) -> bool:
+    """Re-sync all wiretap notes with the live grid. Returns True if intel changed."""
+    intel = ante.get("intel")
+    if not intel:
+        return False
+    before = json.dumps(intel, sort_keys=True)
+    refresh_intel(ante, fill_all=True)
+    return json.dumps(ante.get("intel", {}), sort_keys=True) != before
+
+
+def intel_notes_valid(ante: dict) -> bool:
+    """True when every stored note is still a legal candidate."""
+    intel = ante.get("intel") or {}
+    hints = ante.get("hints") or {}
+    for key, notes in intel.items():
+        r, c = map(int, key.split(","))
+        if hints.get(key) or ante["player_grid"][r][c] != 0:
+            continue
+        allowed = valid_candidates(ante, r, c)
+        if any(n not in allowed for n in notes):
+            return False
+    return True

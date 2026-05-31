@@ -5,7 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 
 from app.game.balance import HELP_BONUS_SCORE
-from app.game.intel import strip_digit_from_peers
+from app.game.intel import maintain_intel
 from app.sudoku.scorer import AnteScoreState, apply_placement_score
 
 
@@ -64,7 +64,8 @@ def apply_auto_fill_once(*, state: dict, ante: dict, events: list[dict]) -> bool
     ante["player_grid"][row][col] = value
     ante.setdefault("hints", {}).pop(f"{row},{col}", None)
     ante.setdefault("intel", {}).pop(f"{row},{col}", None)
-    strip_digit_from_peers(ante, row, col, value)
+    if ante.get("intel"):
+        maintain_intel(ante)
 
     ante_state = AnteScoreState(**ante["ante_state"])
     score_result = apply_placement_score(

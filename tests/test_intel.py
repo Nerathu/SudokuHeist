@@ -7,7 +7,7 @@ import pytest
 
 from app.db import init_db, load_run, save_meta, save_run
 from app.game import run as run_service
-from app.game.intel import refresh_intel, valid_candidates
+from app.game.intel import intel_notes_valid, maintain_intel, refresh_intel, valid_candidates
 
 
 @pytest.fixture
@@ -90,3 +90,40 @@ def test_refresh_intel_prunes_existing_notes(temp_db):
     ante["intel"] = {f"{r},{c}": list(range(1, 10))}
     refresh_intel(ante, fill_all=False)
     assert set(ante["intel"][f"{r},{c}"]) == valid_candidates(ante, r, c)
+
+
+def test_maintain_intel_after_placements(temp_db):
+    state = _start_medium_ante()
+    run_service.sync_intel()
+    raw = load_run()
+    solution = raw["ante"]["solution"]
+    grid = raw["ante"]["player_grid"]
+    placed = 0
+    for r in range(9):
+        for c in range(9):
+            raw = load_run()
+            grid = raw["ante"]["player_grid"]
+            if grid[r][c] == 0:
+                run_service.place_cell(r, c, raw["ante"]["solution"][r][c])
+                placed += 1
+                if placed >= 8:
+                    break
+        if placed >= 8:
+            break
+    raw = load_run()
+    assert intel_notes_valid(raw["ante"])
+
+
+def test_maintain_intel_repairs_stale_notes(temp_db):
+    state = _start_medium_ante()
+    run_service.sync_intel()
+    raw = load_run()
+    ante = raw["ante"]
+    grid = ante["player_grid"]
+    r, c = next((ri, ci) for ri in range(9) for ci in range(9) if grid[ri][ci] == 0)
+    ante["intel"][f"{r},{c}"] = list(range(1, 10))
+    save_run(raw)
+    assert not intel_notes_valid(ante)
+    run_service.get_state()
+    raw = load_run()
+    assert intel_notes_valid(raw["ante"])

@@ -10,7 +10,7 @@ from copy import deepcopy
 from app.db import clear_run, get_meta, load_run, save_run, upgrade_level
 from app.game.autofill import run_auto_fills
 from app.game.balance import HELP_BONUS_SCORE, INTEL_DIFFICULTIES
-from app.game.intel import refresh_intel, strip_digit_from_peers, valid_candidates
+from app.game.intel import maintain_intel, refresh_intel, valid_candidates
 from app.game.boosts import BOOSTS, boost_by_id, can_afford_boost, fifty_fifty_options, spend_score
 from app.game.shop import generate_shop_offers_with_meta, reroll_cost
 from app.game.tricks import meta_upgrades, random_quote, trick_by_id
@@ -76,6 +76,11 @@ def _intel_enabled(ante: dict) -> bool:
 
 def _clear_cell_intel(ante: dict, row: int, col: int) -> None:
     ante.setdefault("intel", {}).pop(f"{row},{col}", None)
+
+
+def _touch_intel(ante: dict) -> None:
+    if _intel_enabled(ante) and ante.get("intel"):
+        maintain_intel(ante)
 
 
 def _grant_target_met(ante: dict, events: list[dict]) -> None:
@@ -181,7 +186,11 @@ def get_state() -> dict | None:
     raw = load_run()
     if not raw:
         return None
-    return public_state(_hydrate(raw))
+    state = _hydrate(raw)
+    if state.get("ante") and _intel_enabled(state["ante"]) and state["ante"].get("intel"):
+        if maintain_intel(state["ante"]):
+            _persist(state)
+    return public_state(state)
 
 
 def _cells_remaining(ante: dict) -> int:
@@ -341,8 +350,7 @@ def place_cell(row: int, col: int, value: int) -> dict:
     ante["moves_left"] -= 1
     ante.setdefault("hints", {}).pop(f"{row},{col}", None)
     _clear_cell_intel(ante, row, col)
-    if _intel_enabled(ante):
-        strip_digit_from_peers(ante, row, col, value)
+    _touch_intel(ante)
 
     if not ante.get("target_met") and ante["score"] >= ante["score_target"]:
         _grant_target_met(ante, events)
@@ -451,10 +459,7 @@ def clear_cell(row: int, col: int) -> dict:
 
     ante["player_grid"][row][col] = 0
     _clear_cell_intel(ante, row, col)
-    if _intel_enabled(ante):
-        valid = valid_candidates(ante, row, col)
-        if valid:
-            ante.setdefault("intel", {})[f"{row},{col}"] = sorted(valid)
+    _touch_intel(ante)
     events = [{"type": "cell_cleared", "row": row, "col": col, "message": "Falsche Zahl entfernt."}]
     _persist(state)
     out = public_state(state)
@@ -494,6 +499,7 @@ def toggle_intel_note(row: int, col: int, digit: int) -> dict:
     else:
         notes.pop(key, None)
 
+    refresh_intel(ante, fill_all=False)
     _persist(state)
     out = public_state(state)
     out["events"] = [{"type": "intel_toggle", "row": row, "col": col, "digit": digit}]
@@ -545,6 +551,8 @@ def buy_boost(boost_id: str, row: int | None, col: int | None) -> dict:
         a, b = fifty_fifty_options(correct, state["rng"])
         key = f"{row},{col}"
         ante.setdefault("hints", {})[key] = [a, b]
+        _clear_cell_intel(ante, row, col)
+        _touch_intel(ante)
         events.append({
             "type": "fifty_fifty",
             "row": row,
@@ -562,6 +570,8 @@ def buy_boost(boost_id: str, row: int | None, col: int | None) -> dict:
         ante["player_grid"][row][col] = val
         ante["fixed"][row][col] = True
         ante.setdefault("hints", {}).pop(f"{row},{col}", None)
+        _clear_cell_intel(ante, row, col)
+        _touch_intel(ante)
         events.append({
             "type": "reveal",
             "row": row,
