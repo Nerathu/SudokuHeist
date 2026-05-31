@@ -15,3 +15,4 @@ def normalize_base_path(raw: str | None) -> str:
 
 
 BASE_PATH = normalize_base_path(os.getenv("BASE_PATH", "/sudokuheist"))
+APP_VERSION = os.getenv("APP_VERSION", "1.0.3")

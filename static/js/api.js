@@ -1,6 +1,11 @@
-/** API-Pfade relativ zum <base href> (Subpath /sudokuheist/). */
-function apiPath(path) {
-  return path.startsWith("/") ? path.slice(1) : path;
+function resolveApiUrl(path) {
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  let base = window.__BASE_PATH__;
+  if (!base || base.includes("@@")) {
+    const match = window.location.pathname.match(/^(.*\/sudokuheist)/);
+    base = match ? match[1] : "";
+  }
+  return `${base.replace(/\/$/, "")}${clean}`;
 }
 
 function apiErrorMessage(err, statusText) {
@@ -17,18 +22,18 @@ function apiErrorMessage(err, statusText) {
 
 const API = {
   async get(path) {
-    const res = await fetch(apiPath(path));
+    const res = await fetch(resolveApiUrl(path));
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(apiErrorMessage(err, res.statusText));
     }
     return res.json();
   },
-  async post(path, body) {
-    const res = await fetch(apiPath(path), {
+  async post(path, body = {}) {
+    const res = await fetch(resolveApiUrl(path), {
       method: "POST",
-      headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -49,7 +54,7 @@ export const api = {
   shopBuy: (item_id, kind) => API.post("/api/shop/buy", { item_id, kind }),
   shopReroll: () => API.post("/api/shop/reroll"),
   anteContinue: () => API.post("/api/ante/continue"),
-  useKniff: (item_id) => API.post(`api/kniff/use?item_id=${encodeURIComponent(item_id)}`),
+  useKniff: (item_id) => API.post(`/api/kniff/use?item_id=${encodeURIComponent(item_id)}`),
   metaBuy: (upgrade_id) => API.post("/api/meta/buy", { upgrade_id }),
   buyBoost: (boost_id, row, col) =>
     API.post("/api/ante/boost", { boost_id, row: row ?? null, col: col ?? null }),

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#12081f" />
   <title>SudokuHeist</title>
-  <base href="__BASE_PATH__/" />
-  <link rel="stylesheet" href="static/styles.css" />
+  <base href="@@BASE_PATH@@/" />
+  <link rel="stylesheet" href="static/styles.css?v=@@APP_VERSION@@" />
 </head>
 <body>
   <div id="scanlines" aria-hidden="true"></div>
@@ -44,6 +44,7 @@
             <button type="button" class="btn btn-primary" id="btnNewRun">Neuer Run</button>
             <button type="button" class="btn btn-secondary" id="btnContinue" hidden>Weiterspielen</button>
           </div>
+          <p class="app-version" id="appVersion"></p>
           <div class="meta-panel" id="metaPanel">
             <h3>Meta-Beute: <span id="metaBeute">0</span></h3>
             <div id="metaShop" class="meta-shop"></div>
@@ -129,7 +130,10 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <script>window.__BASE_PATH__ = "__BASE_PATH__";</script>
-  <script type="module" src="static/js/app.js"></script>
+  <script>
+    window.__BASE_PATH__ = "@@BASE_PATH@@";
+    window.__APP_VERSION__ = "@@APP_VERSION@@";
+  </script>
+  <script type="module" src="static/js/app.js?v=@@APP_VERSION@@"></script>
 </body>
 </html>

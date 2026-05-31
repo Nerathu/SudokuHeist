@@ -1,33 +1,36 @@
 const canvas = document.getElementById("fxCanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas?.getContext("2d");
 let particles = [];
 
 export function resizeCanvas() {
+  if (!canvas || !ctx) return;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
 
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+if (canvas && ctx) {
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
 
-function loop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles = particles.filter((p) => p.life > 0);
-  particles.forEach((p) => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= 1;
-    p.vy += 0.08;
-    ctx.globalAlpha = p.life / 40;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.globalAlpha = 1;
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter((p) => p.life > 0);
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      p.vy += 0.08;
+      ctx.globalAlpha = p.life / 40;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(loop);
+  }
   requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
 
 export function burst(x, y, color = "#ffd166", count = 18) {
   for (let i = 0; i < count; i++) {

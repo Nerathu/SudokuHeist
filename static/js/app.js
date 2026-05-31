@@ -144,12 +144,20 @@ async function boot() {
   window.__sudokuHeistUpdate = handleStateUpdate;
 
   document.getElementById("btnNewRun").addEventListener("click", async () => {
+    const btn = document.getElementById("btnNewRun");
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Startet…";
     try {
       await api.newRun();
       const state = await api.startRun();
       await handleStateUpdate(state);
     } catch (e) {
       showToast(e.message || String(e));
+      console.error("Neuer Run fehlgeschlagen:", e);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
     }
   });
 
@@ -193,7 +201,12 @@ async function boot() {
   });
 
   await refreshMeta();
+  const ver = document.getElementById("appVersion");
+  if (ver) ver.textContent = `v${window.__APP_VERSION__ || "?"}`;
   showRaccoon("Willkommen im Tresor. Sudoku ist nur Alibi.");
 }
 
-boot().catch((e) => showToast(e.message));
+boot().catch((e) => {
+  console.error("Boot fehlgeschlagen:", e);
+  showToast(`Start fehlgeschlagen: ${e.message || e}`);
+});

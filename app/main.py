@@ -8,7 +8,7 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import BASE_PATH
+from app.config import APP_VERSION, BASE_PATH
 from app.db import get_meta, init_db
 from app.game import run as run_service
 from app.models import BoostRequest, CellClearRequest, CellPlaceRequest, MetaBuyRequest, NewRunRequest, ShopBuyRequest
@@ -26,7 +26,9 @@ def startup() -> None:
 
 
 def _index_html() -> str:
-    return _INDEX_TEMPLATE.replace("__BASE_PATH__", BASE_PATH)
+    return (
+        _INDEX_TEMPLATE.replace("@@BASE_PATH@@", BASE_PATH).replace("@@APP_VERSION@@", APP_VERSION)
+    )
 
 
 @router.get("/")
@@ -37,7 +39,7 @@ def index() -> HTMLResponse:
 
 @router.get("/health")
 def health() -> dict:
-    return {"ok": True, "base_path": BASE_PATH or "/"}
+    return {"ok": True, "base_path": BASE_PATH or "/", "version": APP_VERSION}
 
 
 @router.get("/api/meta")

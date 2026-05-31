@@ -20,7 +20,7 @@ if ! docker compose version &>/dev/null; then
 fi
 
 check_port_for_deploy "$ROOT"
-docker compose up -d --build --remove-orphans
+docker compose up -d --build --force-recreate --remove-orphans
 
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 PORT="$(read_host_port "$ROOT")"
