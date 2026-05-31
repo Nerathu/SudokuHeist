@@ -1,4 +1,5 @@
 import { showToast, vibrate } from "./hud.js";
+import { createLoadoutChip, itemIcon, itemTooltip, kniffMeta } from "./loadout.js";
 
 let selected = null;
 let onPlace = null;
@@ -358,25 +359,28 @@ function renderBoosts(state) {
   }
   bar.hidden = false;
   (state.ante.boosts || []).forEach((boost) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "boost-btn";
     const affordable = state.ante.score - boost.cost >= state.ante.score_target;
-    btn.disabled = !affordable;
-    btn.innerHTML = `<strong>${boost.name}</strong><span>${boost.cost} Pkt</span>`;
-    btn.title = boost.description;
-    btn.addEventListener("click", async () => {
-      if (boost.id === "extra_moves") {
-        const { api } = await import("./api.js");
-        try {
-          const result = await api.buyBoost(boost.id);
-          if (onStateUpdate) onStateUpdate(result);
-        } catch (e) {
-          showToast(e.message);
+    const btn = createLoadoutChip({
+      tag: "button",
+      icon: itemIcon(boost.id),
+      label: `${boost.name}, ${boost.cost} Punkte`,
+      title: itemTooltip(boost.name, boost.description),
+      badge: boost.cost,
+      className: "loadout-chip boost-chip",
+      disabled: !affordable,
+      onActivate: async () => {
+        if (boost.id === "extra_moves") {
+          const { api } = await import("./api.js");
+          try {
+            const result = await api.buyBoost(boost.id);
+            if (onStateUpdate) onStateUpdate(result);
+          } catch (e) {
+            showToast(e.message);
+          }
+        } else {
+          setPendingBoost(boost.id);
         }
-      } else {
-        setPendingBoost(boost.id);
-      }
+      },
     });
     bar.appendChild(btn);
   });
@@ -486,11 +490,15 @@ function renderTricks(state) {
   const bar = document.getElementById("tricksBar");
   bar.innerHTML = "";
   (state.tricks || []).filter(Boolean).forEach((t) => {
-    const chip = document.createElement("span");
-    chip.className = "trick-chip";
-    chip.title = t.description;
-    chip.textContent = t.name;
-    bar.appendChild(chip);
+    bar.appendChild(
+      createLoadoutChip({
+        icon: itemIcon(t.id),
+        label: t.name,
+        title: itemTooltip(t.name, t.description),
+        className: "loadout-chip trick-chip",
+        showHintOnTap: true,
+      }),
+    );
   });
 }
 
@@ -499,20 +507,26 @@ function renderKniffs(state) {
   bar.innerHTML = "";
   Object.entries(state.kniffs || {}).forEach(([id, count]) => {
     if (count <= 0) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "kniff-btn";
-    btn.textContent = `${id.replace(/_/g, " ")} (${count})`;
-    btn.addEventListener("click", async () => {
-      const { api } = await import("./api.js");
-      try {
-        const result = await api.useKniff(id);
-        if (onStateUpdate) onStateUpdate(result);
-      } catch (err) {
-        showToast(err.message);
-      }
-    });
-    bar.appendChild(btn);
+    const meta = kniffMeta(id);
+    bar.appendChild(
+      createLoadoutChip({
+        tag: "button",
+        icon: itemIcon(id),
+        label: `${meta.name}, ${count} übrig`,
+        title: itemTooltip(meta.name, meta.description),
+        badge: count,
+        className: "loadout-chip kniff-chip",
+        onActivate: async () => {
+          const { api } = await import("./api.js");
+          try {
+            const result = await api.useKniff(id);
+            if (onStateUpdate) onStateUpdate(result);
+          } catch (err) {
+            showToast(err.message);
+          }
+        },
+      }),
+    );
   });
 }
 

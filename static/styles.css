@@ -539,11 +539,14 @@ body.puzzle-mode {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.35rem;
   overflow-x: auto;
   overflow-y: hidden;
-  max-height: 1.75rem;
+  max-height: 2.5rem;
+  padding: 0.1rem 0;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .puzzle-bars::-webkit-scrollbar {
@@ -715,62 +718,111 @@ body.puzzle-mode {
   border-bottom: 2px solid rgba(255, 209, 102, 0.35);
 }
 
+.puzzle-bars .tricks-bar,
+.puzzle-bars .boosts-bar,
+.puzzle-bars .kniffs-bar {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0;
+  min-height: 0;
+}
+
+.loadout-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: default;
+  touch-action: manipulation;
+}
+
+.loadout-chip.trick-chip {
+  border-color: rgba(123, 44, 191, 0.55);
+  background: rgba(123, 44, 191, 0.22);
+  cursor: pointer;
+}
+
+.loadout-chip.kniff-chip {
+  border-color: rgba(6, 214, 160, 0.55);
+  background: rgba(6, 214, 160, 0.12);
+  cursor: pointer;
+}
+
+.loadout-chip.boost-chip {
+  border-color: rgba(255, 209, 102, 0.55);
+  background: rgba(255, 209, 102, 0.1);
+  cursor: pointer;
+}
+
+.loadout-chip.disabled,
+.loadout-chip:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.loadout-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.loadout-badge {
+  position: absolute;
+  right: -0.2rem;
+  bottom: -0.15rem;
+  min-width: 0.95rem;
+  height: 0.95rem;
+  padding: 0 0.18rem;
+  border-radius: 999px;
+  background: rgba(18, 8, 31, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.52rem;
+  font-weight: 800;
+  line-height: 0.95rem;
+  text-align: center;
+  color: var(--gold);
+  pointer-events: none;
+}
+
+.kniff-chip .loadout-badge {
+  color: var(--green);
+}
+
 .tricks-bar, .kniffs-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.45rem;
-  min-height: 1.5rem;
+  flex-wrap: nowrap;
+  gap: 0.28rem;
+  margin-bottom: 0;
+  min-height: 0;
 }
 
 .trick-chip {
   font-size: 0.62rem;
-  padding: 0.15rem 0.4rem;
-  white-space: nowrap;
-  border-radius: 999px;
-  background: rgba(123, 44, 191, 0.35);
-  border: 1px solid var(--purple-glow);
 }
 
 .kniff-btn {
   font-size: 0.62rem;
-  padding: 0.15rem 0.4rem;
-  white-space: nowrap;
-  border-radius: 8px;
-  background: rgba(6, 214, 160, 0.15);
-  border: 1px solid var(--green);
-  color: var(--green);
-  cursor: pointer;
 }
 
 .boosts-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.45rem;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0.28rem;
+  margin-bottom: 0;
 }
 
 .boost-btn {
   flex: 0 0 auto;
-  min-width: 72px;
-  padding: 0.2rem 0.4rem;
-  border-radius: 10px;
-  border: 1px solid var(--gold);
-  background: rgba(255, 209, 102, 0.12);
-  color: var(--gold);
-  cursor: pointer;
-  text-align: left;
-  font-size: 0.62rem;
-  white-space: nowrap;
-}
-
-.boost-btn strong {
-  display: block;
-}
-
-.boost-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .ante-status {
