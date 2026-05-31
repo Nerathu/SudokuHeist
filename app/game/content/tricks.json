@@ -1,0 +1,151 @@
+{
+  "tricks": [
+    {
+      "id": "dreihaus_vampir",
+      "name": "Dreihaus-Vampir",
+      "description": "Jede gesetzte 3 gibt +25 Punkte.",
+      "cost": 6,
+      "kind": "passive"
+    },
+    {
+      "id": "reihen_rakete",
+      "name": "Reihen-Rakete",
+      "description": "Erste komplette Reihe pro Ante zählt doppelt.",
+      "cost": 7,
+      "kind": "passive"
+    },
+    {
+      "id": "neon_sieben",
+      "name": "Neon-Sieben",
+      "description": "Alle 7er geben +15 Bonuspunkte.",
+      "cost": 5,
+      "kind": "passive"
+    },
+    {
+      "id": "combo_kaffee",
+      "name": "Combo-Kaffee",
+      "description": "+0.25× Multiplier pro Streak-Zelle (max 5×).",
+      "cost": 8,
+      "kind": "passive"
+    },
+    {
+      "id": "block_boss",
+      "name": "Block-Boss",
+      "description": "Block-Abschluss gibt +50 statt +20.",
+      "cost": 6,
+      "kind": "passive"
+    },
+    {
+      "id": "waschbaers_tasche",
+      "name": "Waschbärs Tasche",
+      "description": "+1 Herz max, aber Punkteziel +10%.",
+      "cost": 5,
+      "kind": "passive"
+    },
+    {
+      "id": "waschbaer_ablenkung",
+      "name": "Waschbär-Ablenkung",
+      "description": "1 Fehler pro Ante wird ignoriert.",
+      "cost": 6,
+      "kind": "passive"
+    },
+    {
+      "id": "gerade_gier",
+      "name": "Gerade Gier",
+      "description": "Gerade Zahlen (2,4,6,8) zählen doppelt.",
+      "cost": 7,
+      "kind": "passive"
+    },
+    {
+      "id": "raccoon_luck",
+      "name": "Raccoon Luck",
+      "description": "15% Jackpot (+100) bei korrekter Zelle.",
+      "cost": 9,
+      "kind": "passive"
+    },
+    {
+      "id": "chaos_nachbar",
+      "name": "Chaos-Nachbar",
+      "description": "Nachbarzellen geben +5 wenn schon gefüllt.",
+      "cost": 5,
+      "kind": "passive"
+    },
+    {
+      "id": "ticket_magnet",
+      "name": "Ticket-Magnet",
+      "description": "+20% Beute am Ante-Ende.",
+      "cost": 6,
+      "kind": "passive"
+    },
+    {
+      "id": "schnellschreiber",
+      "name": "Schnellschreiber",
+      "description": "+5 Punkte pro Zelle wenn unter 40 Zügen.",
+      "cost": 4,
+      "kind": "passive"
+    }
+  ],
+  "kniffs": [
+    {
+      "id": "schummel_zettel",
+      "name": "Schummel-Zettel",
+      "description": "Füllt eine zufällige leere Zelle korrekt.",
+      "cost": 4,
+      "kind": "consumable"
+    },
+    {
+      "id": "radiergummi",
+      "name": "Radiergummi Deluxe",
+      "description": "Entfernt eine falsche Zelle ohne Herzverlust.",
+      "cost": 3,
+      "kind": "consumable"
+    },
+    {
+      "id": "beute_boost",
+      "name": "Beute-Boost",
+      "description": "+30 sofortige Punkte.",
+      "cost": 3,
+      "kind": "consumable"
+    },
+    {
+      "id": "herz_pflaster",
+      "name": "Herz-Pflaster",
+      "description": "Stellt 1 Herz wieder her.",
+      "cost": 5,
+      "kind": "consumable"
+    }
+  ],
+  "meta_upgrades": [
+    {
+      "id": "extra_heart",
+      "name": "Dicker Pelz",
+      "description": "+1 Start-Herz permanent.",
+      "cost": 15,
+      "max_level": 2
+    },
+    {
+      "id": "start_beute",
+      "name": "Taschendieb-Profi",
+      "description": "+5 Start-Beute im Shop.",
+      "cost": 10,
+      "max_level": 3
+    },
+    {
+      "id": "shop_reroll",
+      "name": "Gewerkschaftsrabatt",
+      "description": "Shop-Reroll kostet 1 weniger.",
+      "cost": 12,
+      "max_level": 2
+    }
+  ],
+  "raccoon_quotes": [
+    "Die 7 war illegal. Mir egal.",
+    "Sudoku ist nur Diebstahl mit Zahlen.",
+    "Balatro? Kenn ich. Ich bin der Billigklon mit Gitter.",
+    "Punkte sind Beute. Beute ist Leben.",
+    "Wenn du zweimal die 5 setzt, weint das Gitter. Nicht mich.",
+    "Boss-Ante: extra scharf, extra shady.",
+    "Ich hab das Puzzle nicht gelöst. Ich hab es bestochen.",
+    "Combo-Streak! Dein Handy vibriert, mein Herz auch."
+  ]
+}

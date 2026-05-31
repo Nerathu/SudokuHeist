@@ -1,0 +1,19 @@
+{
+  "boss_rules": [
+    {
+      "id": "mirror_madness",
+      "name": "Spiegel-Wahnsinn",
+      "description": "Jede gerade Spalte zählt doppelt für Reihen-Boni."
+    },
+    {
+      "id": "odd_only_bonus",
+      "name": "Nur Ungerade",
+      "description": "Ungerade Zahlen geben +10 Extra."
+    },
+    {
+      "id": "tight_timer",
+      "name": "Tresor-Alarm",
+      "description": "Max 35 Züge — aber +50% Beute."
+    }
+  ]
+}
