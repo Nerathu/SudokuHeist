@@ -58,13 +58,19 @@ else
 fi
 
 if [[ ! -f "$INSTALL_DIR/.env" ]]; then
-  echo "==> .env anlegen (HOST_PORT=8787)"
-  cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+  ensure_env_file "$INSTALL_DIR"
 fi
 
 # --- Build & Start ---
 echo "==> Container bauen und starten"
+check_port_for_deploy "$INSTALL_DIR"
 run_as_user "cd '$INSTALL_DIR' && docker compose up -d --build --remove-orphans"
+
+PORT="$(read_host_port "$INSTALL_DIR")"
+if ! verify_health "$PORT"; then
+  run_as_user "cd '$INSTALL_DIR' && docker compose ps" || true
+  exit 1
+fi
 
 # --- systemd (optional, braucht sudo) ---
 if command -v systemctl &>/dev/null; then

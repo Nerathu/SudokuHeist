@@ -10,7 +10,7 @@ Fülle Gitter, stapel Tricks, plündere Tresore. Läuft in Docker auf dem Raspbe
 |---------|--------|
 | MVP | spielbar (Map → Antes → Shop → Boss) |
 | Tests | pytest, 13 Tests |
-| Deploy | Docker Compose + Nginx, **`/sudokuheist/`** auf Port **8787** (`.env`) |
+| Deploy | Docker Compose + Nginx, **`/sudokuheist/`** auf Port **9877** (`.env`) |
 | Review | **offen** — siehe unten |
 
 ## Quick Start
@@ -25,13 +25,13 @@ docker compose up -d --build
 Dann im Browser (PC oder Handy im gleichen WLAN):
 
 ```
-http://localhost:8787/sudokuheist/
-http://<raspi-ip>:8787/sudokuheist/
+http://localhost:9877/sudokuheist/
+http://<raspi-ip>:9877/sudokuheist/
 ```
 
-Health-Check: `http://localhost:8787/sudokuheist/health`
+Health-Check: `http://localhost:9877/sudokuheist/health`
 
-> Standard-Port ist **8787** (`.env` → `HOST_PORT`). Port 80 ist auf dem Raspi oft schon belegt.
+> Standard-Port ist **9877** (`.env` → `HOST_PORT`). Port 80 und 8787 sind auf dem Raspi oft schon belegt.
 
 ## Spielprinzip
 
@@ -152,9 +152,11 @@ bash bin/setup-raspi.sh
 
 Das Script installiert Docker (falls nötig), klont das Repo nach `~/sudokuheist`, startet die Container und richtet **systemd** (`sudokuheist.service`) für Autostart ein.
 
-Spiel im LAN: **`http://<raspi-ip>:8787/sudokuheist/`**
+Spiel im LAN: **`http://<raspi-ip>:9877/sudokuheist/`**
 
-Port ändern: in `~/sudokuheist/.env` → `HOST_PORT=9090`, dann `bash bin/deploy.sh`
+Port ändern: in `~/sudokuheist/.env` → `HOST_PORT=9880`, dann `bash bin/deploy.sh`
+
+Nach Deploy prüfen: `bash bin/status.sh`
 
 ### Updates (nach jedem `git push` vom Dev-PC)
 
@@ -175,14 +177,14 @@ Workflow:
 
 | Variable | Default | Bedeutung |
 |----------|---------|-----------|
-| `HOST_PORT` | `8787` | Host-Port in `.env` (Docker → Nginx) |
+| `HOST_PORT` | `9877` | Host-Port in `.env` (Docker → Nginx) |
 | `INSTALL_DIR` | `~/sudokuheist` | Installationspfad |
 | `REPO_URL` | `git@github.com:Nerathu/SudokuHeist.git` | Git-Remote |
 | `BRANCH` | `main` | Branch |
 
 ## Raspi-Hinweise
 
-- Erreichbar unter **`http://<raspi-ip>:8787/sudokuheist/`** (Port in `.env`)
+- Erreichbar unter **`http://<raspi-ip>:9877/sudokuheist/`** (Port in `.env`)
 - Daten liegen im Volume `sudokuheist_data` (SQLite)
 - Image basiert auf `python:3.12-slim` — ARM64-tauglich
 - Kein Internet nötig nach dem Build (keine CDN-Fonts)

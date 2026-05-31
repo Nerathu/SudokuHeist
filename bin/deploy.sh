@@ -19,10 +19,15 @@ if ! docker compose version &>/dev/null; then
   exit 1
 fi
 
+check_port_for_deploy "$ROOT"
 docker compose up -d --build --remove-orphans
 
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 PORT="$(read_host_port "$ROOT")"
+if ! verify_health "$PORT"; then
+  docker compose ps
+  exit 1
+fi
 
 echo ""
 echo "Deploy fertig."

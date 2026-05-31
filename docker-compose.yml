@@ -17,7 +17,7 @@ services:
     container_name: sudokuheist-nginx
     restart: unless-stopped
     ports:
-      - "${HOST_PORT:-8787}:80"
+      - "${HOST_PORT:-9877}:80"
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
