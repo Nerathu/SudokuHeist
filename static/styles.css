@@ -131,6 +131,39 @@ body.puzzle-mode {
   color: #4a3a5a;
 }
 
+.hud-hearts-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.hud-intel-btn {
+  flex-shrink: 0;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  border-radius: 8px;
+  background: rgba(0, 245, 212, 0.07);
+  color: var(--cyan);
+  font-size: 0.82rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.hud-intel-btn[hidden] {
+  display: none !important;
+}
+
+.hud-intel-btn[aria-pressed="true"] {
+  border-color: var(--cyan);
+  background: rgba(0, 245, 212, 0.18);
+  box-shadow: 0 0 12px rgba(0, 245, 212, 0.45);
+  animation: intel-pulse 1.6s ease-in-out infinite;
+}
+
 .raccoon-bubble {
   display: flex;
   gap: 0.5rem;
@@ -314,6 +347,70 @@ body.puzzle-mode {
 
 .ante-bar strong {
   color: var(--gold);
+}
+
+.difficulty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.difficulty-label {
+  font-weight: 700;
+}
+
+.difficulty-bars {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 12px;
+}
+
+.difficulty-bar {
+  width: 3px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.difficulty-bar:nth-child(1) { height: 5px; }
+.difficulty-bar:nth-child(2) { height: 7px; }
+.difficulty-bar:nth-child(3) { height: 9px; }
+.difficulty-bar:nth-child(4) { height: 11px; }
+
+.difficulty-pill[data-tier="easy"] .difficulty-label { color: var(--cyan); }
+.difficulty-pill[data-tier="easy"] .difficulty-bar.active {
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(76, 201, 240, 0.6);
+}
+
+.difficulty-pill[data-tier="medium"] .difficulty-label { color: var(--gold); }
+.difficulty-pill[data-tier="medium"] .difficulty-bar.active {
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(255, 209, 102, 0.55);
+}
+
+.difficulty-pill[data-tier="hard"] .difficulty-label { color: #ff9f43; }
+.difficulty-pill[data-tier="hard"] .difficulty-bar.active {
+  background: #ff9f43;
+  box-shadow: 0 0 6px rgba(255, 159, 67, 0.55);
+}
+
+.difficulty-pill[data-tier="boss"] .difficulty-label { color: var(--pink); }
+.difficulty-pill[data-tier="boss"] .difficulty-bar.active {
+  background: var(--pink);
+  box-shadow: 0 0 6px rgba(239, 71, 111, 0.55);
+}
+
+.difficulty-pill[data-tier="boss"] {
+  border-color: rgba(239, 71, 111, 0.45);
+  animation: difficulty-boss-pulse 2s ease-in-out infinite;
 }
 
 .combo {
@@ -794,52 +891,7 @@ body.puzzle-mode {
   color: var(--pink);
 }
 
-/* ── INTEL Wiretap ── */
-.intel-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.35rem;
-  padding: 0.25rem 0;
-}
-
-.intel-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.42rem 0.85rem;
-  border: 1px solid rgba(0, 245, 212, 0.35);
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(0, 245, 212, 0.08), rgba(155, 93, 229, 0.12));
-  color: var(--cyan);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
-}
-
-.intel-toggle .intel-icon {
-  font-size: 1rem;
-  filter: drop-shadow(0 0 6px rgba(0, 245, 212, 0.8));
-}
-
-.intel-toggle[aria-pressed="true"] {
-  border-color: var(--cyan);
-  box-shadow:
-    0 0 18px rgba(0, 245, 212, 0.45),
-    inset 0 0 12px rgba(0, 245, 212, 0.12);
-  animation: intel-pulse 1.6s ease-in-out infinite;
-}
-
-.intel-hint {
-  color: var(--muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-}
-
+/* ── INTEL Wiretap (HUD button + grid mode) ── */
 .screen-puzzle.intel-mode .sudoku-grid {
   box-shadow:
     0 0 0 1px rgba(0, 245, 212, 0.25),
@@ -916,8 +968,13 @@ body.puzzle-mode {
 }
 
 @keyframes intel-pulse {
-  0%, 100% { box-shadow: 0 0 14px rgba(0, 245, 212, 0.35), inset 0 0 8px rgba(0, 245, 212, 0.08); }
-  50% { box-shadow: 0 0 22px rgba(0, 245, 212, 0.55), inset 0 0 14px rgba(0, 245, 212, 0.16); }
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 245, 212, 0.35); }
+  50% { box-shadow: 0 0 16px rgba(0, 245, 212, 0.55); }
+}
+
+@keyframes difficulty-boss-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(239, 71, 111, 0); }
+  50% { box-shadow: 0 0 14px rgba(239, 71, 111, 0.35); }
 }
 
 @keyframes intel-scan {

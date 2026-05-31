@@ -22,7 +22,10 @@
         </div>
       </div>
       <div class="hud" id="hud" hidden>
-        <div class="hud-item hearts" id="heartsHud" aria-label="Herzen"></div>
+        <div class="hud-hearts-wrap">
+          <div class="hud-item hearts" id="heartsHud" aria-label="Herzen"></div>
+          <button type="button" class="hud-intel-btn" id="intelToggle" hidden aria-pressed="false" aria-label="Wiretap" title="Wiretap — Kandidaten">◈</button>
+        </div>
         <div class="hud-item"><span class="lbl">Beute</span><strong id="beuteHud">0</strong></div>
         <div class="hud-item"><span class="lbl">Punkte</span><strong id="scoreHud">0</strong></div>
       </div>
@@ -63,6 +66,10 @@
       <section class="screen screen-puzzle" id="screenPuzzle" hidden>
         <div class="puzzle-chrome">
           <div class="ante-bar">
+            <div class="difficulty-pill" id="difficultyBadge" hidden aria-label="Schwierigkeit">
+              <span class="difficulty-label" id="difficultyLabel">—</span>
+              <span class="difficulty-bars" id="difficultyBars" aria-hidden="true"></span>
+            </div>
             <div class="target">Punkte: <strong id="scoreHudInline">0</strong> / <strong id="targetScore">0</strong></div>
             <div class="moves">Züge: <strong id="movesLeft">0</strong></div>
             <div class="combo" id="comboDisplay">Combo ×1</div>
@@ -87,12 +94,6 @@
             <div class="boosts-bar" id="boostsBar" hidden></div>
             <div class="kniffs-bar" id="kniffsBar"></div>
           </div>
-        </div>
-        <div class="intel-bar" id="intelBar" hidden>
-          <button type="button" class="intel-toggle" id="intelToggle" aria-pressed="false">
-            <span class="intel-icon">◈</span> WIRETAP
-          </button>
-          <span class="intel-hint">Zelle + Zahl · Scan ohne Zelle</span>
         </div>
         <div class="numpad" id="numpad"></div>
         <div class="victory-overlay" id="victoryOverlay" hidden>

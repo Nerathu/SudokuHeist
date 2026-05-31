@@ -1,5 +1,12 @@
 let toastTimer;
 
+const DIFFICULTY_META = {
+  easy: { label: "Leicht", tier: 1 },
+  medium: { label: "Mittel", tier: 2 },
+  hard: { label: "Schwer", tier: 3 },
+  boss: { label: "Boss", tier: 4 },
+};
+
 export function showToast(msg, ms = 2200) {
   const el = document.getElementById("toast");
   el.textContent = msg;
@@ -34,10 +41,36 @@ export function renderHearts(current, max) {
   }
 }
 
+export function renderDifficulty(state) {
+  const badge = document.getElementById("difficultyBadge");
+  const label = document.getElementById("difficultyLabel");
+  const bars = document.getElementById("difficultyBars");
+  if (!badge || !label || !bars) return;
+
+  const inPuzzle = state?.phase === "ante" || state?.phase === "ante_victory";
+  const diff = state?.ante?.difficulty;
+  if (!inPuzzle || !diff) {
+    badge.hidden = true;
+    return;
+  }
+
+  const meta = DIFFICULTY_META[diff] || { label: diff, tier: 2 };
+  badge.hidden = false;
+  badge.dataset.tier = diff;
+  label.textContent = meta.label;
+  bars.innerHTML = "";
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.createElement("span");
+    bar.className = `difficulty-bar${i <= meta.tier ? " active" : ""}`;
+    bars.appendChild(bar);
+  }
+}
+
 export function updateHud(state) {
   document.getElementById("hud").hidden = !state || state.phase === "map" && !state.ante;
   if (!state) return;
   renderHearts(state.hearts, state.max_hearts);
+  renderDifficulty(state);
   document.getElementById("beuteHud").textContent = state.beute;
   if (state.ante) {
     document.getElementById("scoreHud").textContent = state.ante.score;

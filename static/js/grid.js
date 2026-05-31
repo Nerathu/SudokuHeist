@@ -70,18 +70,18 @@ function syncIntelChrome() {
   document.getElementById("intelToggle")?.setAttribute("aria-pressed", String(intelMode));
 }
 
-function renderIntelBar(state) {
-  const bar = document.getElementById("intelBar");
-  if (!bar) return;
-  const enabled = state?.ante?.intel_enabled;
+function updateIntelButton(state) {
+  const btn = document.getElementById("intelToggle");
+  if (!btn) return;
+  const enabled = state?.ante?.intel_enabled && state?.phase === "ante";
   if (!enabled) {
-    bar.hidden = true;
+    btn.hidden = true;
     intelMode = false;
     intelScanDigit = null;
     syncIntelChrome();
     return;
   }
-  bar.hidden = false;
+  btn.hidden = false;
   syncIntelChrome();
 }
 
@@ -274,7 +274,7 @@ export function renderGrid(state) {
     applyIntelScan(intelScanDigit, state);
   }
 
-  renderIntelBar(state);
+  updateIntelButton(state);
   renderTricks(state);
   renderKniffs(state);
   renderBoosts(state);
