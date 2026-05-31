@@ -11,6 +11,7 @@ from app.db import clear_run, get_meta, load_run, save_run, upgrade_level
 from app.game.autofill import run_auto_fills
 from app.game.balance import HELP_BONUS_SCORE, INTEL_DIFFICULTIES
 from app.game.intel import maintain_intel, refresh_intel, valid_candidates
+from app.game.kniff_drops import try_kniff_drop
 from app.game.boosts import BOOSTS, boost_by_id, can_afford_boost, fifty_fifty_options, spend_score
 from app.game.shop import generate_shop_offers_with_meta, reroll_cost
 from app.game.tricks import meta_upgrades, random_quote, trick_by_id
@@ -121,6 +122,7 @@ def _start_ante(state: dict) -> None:
         "target_met": False,
         "hints": {},
         "intel": {},
+        "kniff_drops_this_ante": 0,
         "started_at": time.time(),
     }
     state["phase"] = PHASE_ANTE
@@ -356,6 +358,7 @@ def place_cell(row: int, col: int, value: int) -> dict:
         _grant_target_met(ante, events)
 
     if correct:
+        try_kniff_drop(state=state, ante=ante, events=events)
         run_auto_fills(state=state, events=events)
 
     puzzle_done = is_complete(ante["player_grid"])

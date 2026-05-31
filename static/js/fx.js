@@ -75,5 +75,8 @@ export function handleEvents(events) {
         burst(rect.left + rect.width / 2, rect.top + rect.height / 2, "#4cc9f0", 8);
       }
     }
+    if (ev.type === "kniff_drop") {
+      burst(window.innerWidth / 2, window.innerHeight * 0.22, "#06d6a0", 22);
+    }
   });
 }

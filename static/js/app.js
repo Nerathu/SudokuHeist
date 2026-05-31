@@ -23,7 +23,8 @@ export async function handleStateUpdate(state) {
   if (state.events) {
     handleEvents(state.events);
     state.events.forEach((ev) => {
-      if (ev.message) showToast(ev.message, 1800);
+      const toastMs = ev.type === "kniff_drop" ? 2800 : 1800;
+      if (ev.message) showToast(ev.message, toastMs);
       if (ev.type === "cell_correct") flashCell(ev.row, ev.col, "correct");
       if (ev.type === "cell_wrong") flashCell(ev.row, ev.col, "wrong");
       if (ev.type === "auto_fill") flashCell(ev.row, ev.col, "auto");
