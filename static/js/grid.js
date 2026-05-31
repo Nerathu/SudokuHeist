@@ -301,9 +301,11 @@ export function renderGrid(state) {
   }
 
   updateIntelButton(state);
-  renderTricks(state);
   renderKniffs(state);
   renderBoosts(state);
+  renderTricks(state);
+  const loadout = document.querySelector(".puzzle-bars");
+  if (loadout) loadout.scrollLeft = 0;
   renderShopProgress(state);
   renderAnteStatus(state);
   updateNumpadFilter(grid);
@@ -358,7 +360,11 @@ function renderBoosts(state) {
     return;
   }
   bar.hidden = false;
-  (state.ante.boosts || []).forEach((boost) => {
+  const boosts = [...(state.ante.boosts || [])].sort((a, b) => {
+    const afford = (boost) => state.ante.score - boost.cost >= state.ante.score_target;
+    return Number(afford(b)) - Number(afford(a));
+  });
+  boosts.forEach((boost) => {
     const affordable = state.ante.score - boost.cost >= state.ante.score_target;
     const btn = createLoadoutChip({
       tag: "button",
