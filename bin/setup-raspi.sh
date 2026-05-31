@@ -15,10 +15,11 @@ if [[ -z "$SETUP_USER" ]]; then
 fi
 
 run_as_user() {
+  local cmd="$1"
   if [[ "$(id -un)" == "$SETUP_USER" ]]; then
-    "$@"
+    bash -c "$cmd"
   else
-    sudo -u "$SETUP_USER" -H bash -lc "$*"
+    sudo -u "$SETUP_USER" -H bash -lc "$cmd"
   fi
 }
 
@@ -46,7 +47,7 @@ fi
 
 # --- Repo ---
 if [[ -d "$INSTALL_DIR/.git" ]]; then
-  echo "==> Repo existiert — pull"
+  echo "==> Repo existiert — aktualisieren"
   run_as_user "cd '$INSTALL_DIR' && git fetch origin && git checkout '$BRANCH' && git pull --ff-only origin '$BRANCH'"
 else
   echo "==> Repo klonen"
