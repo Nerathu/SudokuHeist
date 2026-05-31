@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from app.game.balance import HELP_BONUS_SCORE
 from app.sudoku.scorer import AnteScoreState, apply_placement_score
 
 
@@ -61,6 +62,7 @@ def apply_auto_fill_once(*, state: dict, ante: dict, events: list[dict]) -> bool
     before = deepcopy(ante["player_grid"])
     ante["player_grid"][row][col] = value
     ante.setdefault("hints", {}).pop(f"{row},{col}", None)
+    ante.setdefault("intel", {}).pop(f"{row},{col}", None)
 
     ante_state = AnteScoreState(**ante["ante_state"])
     score_result = apply_placement_score(
@@ -96,7 +98,9 @@ def run_auto_fills(*, state: dict, events: list[dict]) -> None:
     while apply_auto_fill_once(state=state, ante=ante, events=events):
         if not ante.get("target_met") and ante["score"] >= ante["score_target"]:
             ante["target_met"] = True
+            ante["score"] += HELP_BONUS_SCORE
             events.append({
                 "type": "target_met",
-                "message": "Beute gesichert! Sudoku zu Ende spielen — Boosts freigeschaltet.",
+                "message": f"Beute gesichert! +{HELP_BONUS_SCORE} Hilfe-Punkte — Boosts freigeschaltet.",
+                "help_bonus": HELP_BONUS_SCORE,
             })

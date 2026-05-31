@@ -9,19 +9,19 @@ BOOSTS = [
         "id": "fifty_fifty",
         "name": "50/50",
         "description": "Zwei Kandidaten diagonal in der Zelle — antippen zum Setzen.",
-        "cost": 40,
+        "cost": 28,
     },
     {
         "id": "reveal",
         "name": "Einblick",
         "description": "Eine Zelle wird korrekt aufgedeckt (ohne Zug).",
-        "cost": 55,
+        "cost": 38,
     },
     {
         "id": "extra_moves",
         "name": "+5 Züge",
         "description": "Der Tresor bleibt länger offen.",
-        "cost": 45,
+        "cost": 32,
     },
 ]
 

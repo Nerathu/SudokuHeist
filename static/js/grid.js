@@ -5,11 +5,15 @@ let onPlace = null;
 let onStateUpdate = null;
 let pendingBoost = null;
 let activeHintOptions = null;
+let intelMode = false;
+let intelScanDigit = null;
+let intelToggleBound = false;
 
 export function initGrid(handler, stateHandler) {
   onPlace = handler;
   onStateUpdate = stateHandler;
   buildNumpad();
+  bindIntelToggle();
 }
 
 export function setPendingBoost(boostId) {
@@ -26,6 +30,92 @@ export function setPendingBoost(boostId) {
 function isWrongCell(r, c, state) {
   if (!state?.ante) return false;
   return (state.ante.wrong_cells || []).some(([wr, wc]) => wr === r && wc === c);
+}
+
+function bindIntelToggle() {
+  if (intelToggleBound) return;
+  const btn = document.getElementById("intelToggle");
+  if (!btn) return;
+  intelToggleBound = true;
+  btn.addEventListener("click", () => {
+    intelMode = !intelMode;
+    intelScanDigit = null;
+    btn.setAttribute("aria-pressed", String(intelMode));
+    syncIntelChrome();
+    if (intelMode) {
+      showToast("WIRETAP aktiv — Zelle + Zahl oder Scan");
+      vibrate(12);
+    }
+  });
+}
+
+function syncIntelChrome() {
+  const puzzle = document.querySelector(".screen-puzzle");
+  puzzle?.classList.toggle("intel-mode", intelMode);
+  puzzle?.classList.toggle("intel-scanning", intelScanDigit != null);
+  document.getElementById("intelToggle")?.setAttribute("aria-pressed", String(intelMode));
+}
+
+function renderIntelBar(state) {
+  const bar = document.getElementById("intelBar");
+  if (!bar) return;
+  const enabled = state?.ante?.intel_enabled;
+  if (!enabled) {
+    bar.hidden = true;
+    intelMode = false;
+    intelScanDigit = null;
+    syncIntelChrome();
+    return;
+  }
+  bar.hidden = false;
+  syncIntelChrome();
+}
+
+function renderIntelCell(cell, notes, scanDigit = intelScanDigit) {
+  cell.classList.add("intel-cell");
+  const grid = document.createElement("span");
+  grid.className = "intel-grid";
+  for (let d = 1; d <= 9; d++) {
+    const span = document.createElement("span");
+    span.className = `intel-n intel-n${d}`;
+    if (notes.includes(d)) {
+      span.textContent = d;
+      span.classList.add("active");
+      if (scanDigit === d) span.classList.add("intel-n-highlight");
+    }
+    grid.appendChild(span);
+  }
+  cell.appendChild(grid);
+}
+
+function applyIntelScan(digit, state) {
+  intelScanDigit = digit;
+  syncIntelChrome();
+  const intel = state?.ante?.intel || {};
+  document.querySelectorAll(".cell").forEach((cell) => {
+    cell.classList.remove("intel-match");
+    const r = Number(cell.dataset.row);
+    const c = Number(cell.dataset.col);
+    const notes = intel[`${r},${c}`] || [];
+    if (notes.includes(digit)) {
+      cell.classList.add("intel-match");
+      cell.querySelectorAll(".intel-grid span").forEach((span) => {
+        span.classList.toggle("intel-n-highlight", Number(span.textContent) === digit);
+      });
+    }
+  });
+  document.querySelectorAll(".num-btn[data-value]").forEach((btn) => {
+    btn.classList.toggle("intel-scan", Number(btn.dataset.value) === digit);
+  });
+  vibrate(8);
+}
+
+function clearIntelScan() {
+  intelScanDigit = null;
+  syncIntelChrome();
+  document.querySelectorAll(".cell.intel-match").forEach((c) => c.classList.remove("intel-match"));
+  document.querySelectorAll(".intel-n-highlight").forEach((s) => s.classList.remove("intel-n-highlight"));
+  document.querySelectorAll(".num-btn.intel-scan").forEach((b) => b.classList.remove("intel-scan"));
 }
 
 function buildNumpad() {
@@ -125,7 +215,9 @@ export function renderGrid(state) {
   const grid = state.ante.player_grid;
   const fixed = state.ante.fixed;
   const hints = state.ante.hints || {};
+  const intel = state.ante.intel || {};
   const wrongSet = new Set((state.ante.wrong_cells || []).map(([r, c]) => `${r},${c}`));
+  const prevSelected = selected;
   selected = null;
   activeHintOptions = null;
 
@@ -142,9 +234,12 @@ export function renderGrid(state) {
 
       const val = grid[r][c];
       const hintKey = `${r},${c}`;
+      const intelNotes = intel[hintKey] || [];
 
       if (!val && hints[hintKey]) {
         renderHintCell(cell, hints[hintKey]);
+      } else if (!val && intelNotes.length) {
+        renderIntelCell(cell, intelNotes);
       } else {
         cell.textContent = val || "";
       }
@@ -158,6 +253,14 @@ export function renderGrid(state) {
     }
   }
 
+  if (prevSelected) {
+    selectCell(prevSelected.r, prevSelected.c, state, false);
+  }
+  if (intelScanDigit != null) {
+    applyIntelScan(intelScanDigit, state);
+  }
+
+  renderIntelBar(state);
   renderTricks(state);
   renderKniffs(state);
   renderBoosts(state);
@@ -283,18 +386,43 @@ async function onCellClick(e, r, c, isFixed, state) {
   selectCell(r, c);
 }
 
-function selectCell(r, c) {
+function selectCell(r, c, state = window.__lastState, vibrateOn = true) {
   selected = { r, c };
   const key = `${r},${c}`;
-  const hints = window.__lastState?.ante?.hints || {};
+  const hints = state?.ante?.hints || {};
   activeHintOptions = hints[key] || null;
   document.querySelectorAll(".cell").forEach((el) => el.classList.remove("selected"));
   document.querySelectorAll(".cell")[r * 9 + c]?.classList.add("selected");
-  updateNumpadFilter(window.__lastState?.ante?.player_grid, activeHintOptions);
-  vibrate(10);
+  updateNumpadFilter(state?.ante?.player_grid, activeHintOptions);
+  if (vibrateOn) vibrate(10);
 }
 
 async function placeNumber(n) {
+  const state = window.__lastState;
+
+  if (intelMode && state?.ante?.intel_enabled) {
+    if (selected) {
+      const { r, c } = selected;
+      if (state.ante.fixed[r][c]) return;
+      if (state.ante.player_grid[r][c] !== 0 && !isWrongCell(r, c, state)) return;
+      const { api } = await import("./api.js");
+      try {
+        const result = await api.toggleIntelNote(r, c, n);
+        if (onStateUpdate) onStateUpdate(result);
+        vibrate(16);
+      } catch (err) {
+        showToast(err.message);
+      }
+      return;
+    }
+    if (intelScanDigit === n) {
+      clearIntelScan();
+      return;
+    }
+    applyIntelScan(n, state);
+    return;
+  }
+
   if (!selected || !onPlace) return;
   if (activeHintOptions && !activeHintOptions.includes(n)) {
     showToast("Nur die zwei 50/50-Zahlen!");

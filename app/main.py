@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import APP_VERSION, BASE_PATH
 from app.db import get_meta, init_db
 from app.game import run as run_service
-from app.models import BoostRequest, CellClearRequest, CellPlaceRequest, MetaBuyRequest, NewRunRequest, ShopBuyRequest
+from app.models import BoostRequest, CellClearRequest, CellIntelRequest, CellPlaceRequest, MetaBuyRequest, NewRunRequest, ShopBuyRequest
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 _INDEX_TEMPLATE = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
@@ -83,6 +83,14 @@ def api_cell_place(body: CellPlaceRequest) -> dict:
 def api_cell_clear(body: CellClearRequest) -> dict:
     try:
         return run_service.clear_cell(body.row, body.col)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@router.post("/api/cell/intel")
+def api_cell_intel(body: CellIntelRequest) -> dict:
+    try:
+        return run_service.toggle_intel_note(body.row, body.col, body.digit)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 

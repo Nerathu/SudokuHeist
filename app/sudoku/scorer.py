@@ -127,7 +127,7 @@ def apply_placement_score(
 
 
 def score_target_for_ante(ante_index: int, is_boss: bool, trick_ids: list[str]) -> int:
-    base = [180, 260, 340, 420, 500, 650]
+    base = [150, 220, 290, 360, 425, 550]
     idx = min(ante_index, len(base) - 1)
     target = base[idx]
     if is_boss:

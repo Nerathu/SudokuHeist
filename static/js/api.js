@@ -50,6 +50,7 @@ export const api = {
   startRun: () => API.post("/api/run/start"),
   placeCell: (row, col, value) => API.post("/api/cell/place", { row, col, value }),
   clearCell: (row, col) => API.post("/api/cell/clear", { row, col }),
+  toggleIntelNote: (row, col, digit) => API.post("/api/cell/intel", { row, col, digit }),
   advanceVictory: () => API.post("/api/ante/advance"),
   shopBuy: (item_id, kind) => API.post("/api/shop/buy", { item_id, kind }),
   shopReroll: () => API.post("/api/shop/reroll"),

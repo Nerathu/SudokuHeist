@@ -95,4 +95,4 @@ def generate_puzzle(clues: int = 30, seed: int | None = None) -> tuple[list[list
 
 
 def clues_for_difficulty(difficulty: str) -> int:
-    return {"easy": 40, "medium": 30, "hard": 22, "boss": 20}.get(difficulty, 30)
+    return {"easy": 40, "medium": 34, "hard": 26, "boss": 24}.get(difficulty, 34)

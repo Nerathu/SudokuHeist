@@ -16,6 +16,12 @@ class CellClearRequest(BaseModel):
     col: int = Field(ge=0, le=8)
 
 
+class CellIntelRequest(BaseModel):
+    row: int = Field(ge=0, le=8)
+    col: int = Field(ge=0, le=8)
+    digit: int = Field(ge=1, le=9)
+
+
 class ShopBuyRequest(BaseModel):
     item_id: str
     kind: str = Field(pattern="^(trick|kniff)$")

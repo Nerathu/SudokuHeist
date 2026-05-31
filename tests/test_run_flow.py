@@ -84,3 +84,65 @@ def test_victory_phase_before_shop(temp_db):
     advanced = run_service.advance_from_victory()
     assert advanced["phase"] in ("shop", "ante")
     assert advanced.get("victory") is None
+
+
+def test_intel_notes_medium_plus(temp_db):
+    from app.db import load_run, save_run
+    from app.game.balance import HELP_BONUS_SCORE
+
+    run_service.new_run(seed=4242)
+    raw = load_run()
+    raw["map_index"] = 3
+    save_run(raw)
+    state = run_service.start_from_map()
+    assert state["ante"]["intel_enabled"] is True
+    assert state["ante"]["difficulty"] == "medium"
+
+    grid = state["ante"]["player_grid"]
+    r, c = next((r, c) for r in range(9) for c in range(9) if grid[r][c] == 0)
+
+    toggled = run_service.toggle_intel_note(r, c, 5)
+    assert toggled["ante"]["intel"][f"{r},{c}"] == [5]
+
+    toggled = run_service.toggle_intel_note(r, c, 5)
+    assert f"{r},{c}" not in toggled["ante"]["intel"]
+
+    toggled = run_service.toggle_intel_note(r, c, 3)
+    toggled = run_service.toggle_intel_note(r, c, 7)
+    assert toggled["ante"]["intel"][f"{r},{c}"] == [3, 7]
+
+
+def test_intel_disabled_on_easy(temp_db):
+    run_service.new_run(seed=1)
+    state = run_service.start_from_map()
+    assert state["ante"]["intel_enabled"] is False
+    grid = state["ante"]["player_grid"]
+    r, c = next((r, c) for r in range(9) for c in range(9) if grid[r][c] == 0)
+    with pytest.raises(ValueError, match="INTEL"):
+        run_service.toggle_intel_note(r, c, 1)
+
+
+def test_target_met_grants_help_bonus(temp_db):
+    from app.db import load_run, save_run
+    from app.game.balance import HELP_BONUS_SCORE
+
+    run_service.new_run(seed=777)
+    run_service.start_from_map()
+    raw = load_run()
+    ante = raw["ante"]
+    ante["score"] = ante["score_target"] - 1
+    ante["target_met"] = False
+    save_run(raw)
+
+    raw = load_run()
+    solution = raw["ante"]["solution"]
+    grid = raw["ante"]["player_grid"]
+    r, c = next((r, c) for r in range(9) for c in range(9) if grid[r][c] == 0)
+    result = run_service.place_cell(r, c, solution[r][c])
+    if not result["ante"]["target_met"]:
+        pytest.skip("Could not trigger target_met in one move")
+
+    assert result["ante"]["target_met"] is True
+    help_events = [e for e in result.get("events", []) if e.get("type") == "target_met"]
+    assert help_events
+    assert help_events[0].get("help_bonus") == HELP_BONUS_SCORE

@@ -9,6 +9,7 @@ from copy import deepcopy
 
 from app.db import clear_run, get_meta, load_run, save_run, upgrade_level
 from app.game.autofill import run_auto_fills
+from app.game.balance import HELP_BONUS_SCORE, INTEL_DIFFICULTIES
 from app.game.boosts import BOOSTS, boost_by_id, can_afford_boost, fifty_fifty_options, spend_score
 from app.game.shop import generate_shop_offers_with_meta, reroll_cost
 from app.game.tricks import meta_upgrades, random_quote, trick_by_id
@@ -61,11 +62,32 @@ def _max_hearts(trick_ids: list[str], extra: int) -> int:
 def _difficulty_for_node(node_index: int, is_boss: bool) -> str:
     if is_boss:
         return "boss"
-    if node_index <= 1:
+    if node_index <= 2:
         return "easy"
-    if node_index <= 4:
+    if node_index <= 5:
         return "medium"
     return "hard"
+
+
+def _intel_enabled(ante: dict) -> bool:
+    return ante.get("difficulty") in INTEL_DIFFICULTIES
+
+
+def _clear_cell_intel(ante: dict, row: int, col: int) -> None:
+    ante.setdefault("intel", {}).pop(f"{row},{col}", None)
+
+
+def _grant_target_met(ante: dict, events: list[dict]) -> None:
+    ante["target_met"] = True
+    ante["score"] += HELP_BONUS_SCORE
+    intel = " INTEL-Wiretap aktiv." if _intel_enabled(ante) else ""
+    events.append({
+        "type": "target_met",
+        "message": (
+            f"Beute gesichert! +{HELP_BONUS_SCORE} Hilfe-Punkte — Boosts freigeschaltet.{intel}"
+        ),
+        "help_bonus": HELP_BONUS_SCORE,
+    })
 
 
 def _start_ante(state: dict) -> None:
@@ -92,6 +114,7 @@ def _start_ante(state: dict) -> None:
         },
         "target_met": False,
         "hints": {},
+        "intel": {},
         "started_at": time.time(),
     }
     state["phase"] = PHASE_ANTE
@@ -207,6 +230,9 @@ def _ante_public(ante: dict, state: dict | None = None) -> dict:
         "wrong_cells": _wrong_cells(ante),
         "boosts": BOOSTS,
         "hints": ante.get("hints", {}),
+        "intel": ante.get("intel", {}),
+        "intel_enabled": _intel_enabled(ante),
+        "help_budget": max(0, score - target) if target_met else 0,
         "next_shop_label": _next_shop_label(state) if state else "Shop",
         "puzzle_progress": 1.0 - (_cells_remaining(ante) / max(1, sum(1 for r in range(9) for c in range(9) if ante["puzzle"][r][c] == 0))),
     }
@@ -313,13 +339,10 @@ def place_cell(row: int, col: int, value: int) -> dict:
 
     ante["moves_left"] -= 1
     ante.setdefault("hints", {}).pop(f"{row},{col}", None)
+    _clear_cell_intel(ante, row, col)
 
     if not ante.get("target_met") and ante["score"] >= ante["score_target"]:
-        ante["target_met"] = True
-        events.append({
-            "type": "target_met",
-            "message": "Beute gesichert! Sudoku zu Ende spielen — Boosts freigeschaltet.",
-        })
+        _grant_target_met(ante, events)
 
     if correct:
         run_auto_fills(state=state, events=events)
@@ -424,10 +447,46 @@ def clear_cell(row: int, col: int) -> dict:
         state.pop("pending_kniff", None)
 
     ante["player_grid"][row][col] = 0
+    _clear_cell_intel(ante, row, col)
     events = [{"type": "cell_cleared", "row": row, "col": col, "message": "Falsche Zahl entfernt."}]
     _persist(state)
     out = public_state(state)
     out["events"] = events
+    return out
+
+
+def toggle_intel_note(row: int, col: int, digit: int) -> dict:
+    state = _hydrate(load_run())
+    if state["phase"] != PHASE_ANTE or not state.get("ante"):
+        raise ValueError("Kein aktives Ante")
+
+    ante = state["ante"]
+    if not _intel_enabled(ante):
+        raise ValueError("INTEL erst ab mittlerer Schwierigkeit")
+    if ante["fixed"][row][col]:
+        raise ValueError("Zelle ist fix")
+    if ante["player_grid"][row][col] != 0 and not _is_wrong_player_cell(ante, row, col):
+        raise ValueError("Zelle ist belegt")
+
+    hints = ante.get("hints", {})
+    if hints.get(f"{row},{col}"):
+        raise ValueError("50/50 aktiv — erst wählen")
+
+    notes = ante.setdefault("intel", {})
+    key = f"{row},{col}"
+    current = set(notes.get(key, []))
+    if digit in current:
+        current.remove(digit)
+    else:
+        current.add(digit)
+    if current:
+        notes[key] = sorted(current)
+    else:
+        notes.pop(key, None)
+
+    _persist(state)
+    out = public_state(state)
+    out["events"] = [{"type": "intel_toggle", "row": row, "col": col, "digit": digit}]
     return out
 
 
