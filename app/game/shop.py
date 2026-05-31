@@ -15,12 +15,10 @@ def reroll_cost(meta_shop_reroll_level: int) -> int:
 
 
 def generate_shop_offers(owned_trick_ids: list[str], rng: random.Random) -> dict:
-    available_tricks = [t for t in all_tricks() if t["id"] not in owned_trick_ids]
+    owned = set(owned_trick_ids)
+    available_tricks = [t for t in all_tricks() if t["id"] not in owned]
     rng.shuffle(available_tricks)
     trick_offers = available_tricks[:4]
-    if len(trick_offers) < 4:
-        pool = all_tricks()
-        trick_offers.extend(rng.sample(pool, k=min(4 - len(trick_offers), len(pool))))
 
     kniff_offers = rng.sample(all_kniffs(), k=min(2, len(all_kniffs())))
     return {"tricks": trick_offers, "kniffs": kniff_offers}

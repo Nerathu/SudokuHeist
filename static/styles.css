@@ -1037,6 +1037,36 @@ body.puzzle-mode {
   font-size: 0.85rem;
 }
 
+.shop-card.unaffordable {
+  opacity: 0.42;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.shop-card.unaffordable .cost {
+  color: var(--muted);
+}
+
+.shop-card.unaffordable strong,
+.shop-card.unaffordable p {
+  color: var(--muted);
+}
+
+.shop-empty {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.btn.btn-unaffordable,
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .result-card.win {
   border-color: var(--green);
   box-shadow: 0 0 30px rgba(6, 214, 160, 0.2);

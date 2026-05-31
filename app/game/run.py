@@ -606,6 +606,7 @@ def shop_buy(item_id: str, kind: str) -> dict:
         if item_id in state["trick_ids"]:
             raise ValueError("Trick schon owned")
         state["trick_ids"].append(item_id)
+        shop["tricks"] = [t for t in shop["tricks"] if t["id"] != item_id]
         state["max_hearts"] = _max_hearts(state["trick_ids"], upgrade_level(state["meta"]["upgrades"], "extra_heart"))
         state["hearts"] = min(state["hearts"] + (1 if item_id == "waschbaers_tasche" else 0), state["max_hearts"])
     else:
