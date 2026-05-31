@@ -121,10 +121,16 @@ function showResult(state) {
 }
 
 async function refreshMeta() {
-  const meta = await api.meta();
-  renderMetaPanel(meta);
-  document.getElementById("btnContinue").hidden = !meta.has_run;
-  return meta;
+  try {
+    const meta = await api.meta();
+    renderMetaPanel(meta);
+    document.getElementById("btnContinue").hidden = !meta.has_run;
+    return meta;
+  } catch (e) {
+    showToast(`Meta laden fehlgeschlagen: ${e.message || e}`);
+    document.getElementById("btnContinue").hidden = true;
+    return null;
+  }
 }
 
 async function boot() {
@@ -138,18 +144,31 @@ async function boot() {
   window.__sudokuHeistUpdate = handleStateUpdate;
 
   document.getElementById("btnNewRun").addEventListener("click", async () => {
-    const state = await api.newRun();
-    await handleStateUpdate(state);
+    try {
+      await api.newRun();
+      const state = await api.startRun();
+      await handleStateUpdate(state);
+    } catch (e) {
+      showToast(e.message || String(e));
+    }
   });
 
   document.getElementById("btnContinue").addEventListener("click", async () => {
-    const state = await api.runState();
-    await handleStateUpdate(state);
+    try {
+      const state = await api.runState();
+      await handleStateUpdate(state);
+    } catch (e) {
+      showToast(e.message || String(e));
+    }
   });
 
   document.getElementById("btnStartAnte").addEventListener("click", async () => {
-    const state = await api.startRun();
-    await handleStateUpdate(state);
+    try {
+      const state = await api.startRun();
+      await handleStateUpdate(state);
+    } catch (e) {
+      showToast(e.message || String(e));
+    }
   });
 
   document.getElementById("btnShopReroll").addEventListener("click", async () => {

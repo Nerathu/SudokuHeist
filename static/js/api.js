@@ -1,23 +1,38 @@
-const BASE = (window.__BASE_PATH__ || "").replace(/\/$/, "");
+/** API-Pfade relativ zum <base href> (Subpath /sudokuheist/). */
+function apiPath(path) {
+  return path.startsWith("/") ? path.slice(1) : path;
+}
+
+function apiErrorMessage(err, statusText) {
+  if (!err) return statusText || "Unbekannter Fehler";
+  if (typeof err.detail === "string") return err.detail;
+  if (Array.isArray(err.detail)) {
+    return err.detail.map((e) => e.msg || JSON.stringify(e)).join("; ");
+  }
+  if (typeof err.detail === "object" && err.detail !== null) {
+    return JSON.stringify(err.detail);
+  }
+  return statusText || "Unbekannter Fehler";
+}
 
 const API = {
   async get(path) {
-    const res = await fetch(`${BASE}${path}`);
+    const res = await fetch(apiPath(path));
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || res.statusText);
+      throw new Error(apiErrorMessage(err, res.statusText));
     }
     return res.json();
   },
   async post(path, body) {
-    const res = await fetch(`${BASE}${path}`, {
+    const res = await fetch(apiPath(path), {
       method: "POST",
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || res.statusText);
+      throw new Error(apiErrorMessage(err, res.statusText));
     }
     return res.json();
   },
@@ -34,7 +49,7 @@ export const api = {
   shopBuy: (item_id, kind) => API.post("/api/shop/buy", { item_id, kind }),
   shopReroll: () => API.post("/api/shop/reroll"),
   anteContinue: () => API.post("/api/ante/continue"),
-  useKniff: (item_id) => API.post(`/api/kniff/use?item_id=${encodeURIComponent(item_id)}`),
+  useKniff: (item_id) => API.post(`api/kniff/use?item_id=${encodeURIComponent(item_id)}`),
   metaBuy: (upgrade_id) => API.post("/api/meta/buy", { upgrade_id }),
   buyBoost: (boost_id, row, col) =>
     API.post("/api/ante/boost", { boost_id, row: row ?? null, col: col ?? null }),
